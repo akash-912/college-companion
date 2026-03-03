@@ -28,19 +28,22 @@ export const useAuth = () => {
   }, []);
 
   // Sign Up Function
-  const signUp = async (email, password, userNameString) => {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          full_name: userNameString // Supabase expects the key to be full_name
-        }
-      }
-    });
-    if (error) throw error;
-    return data;
-  };
+  // In useAuth.jsx
+const signUp = async (email, password, name, branch, semester) => {
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      data: {
+        full_name: name,
+        branch: branch,     // Save branch to metadata
+        semester: semester, // Save semester to metadata
+      },
+    },
+  });
+  if (error) throw error;
+  return data;
+};
 
   // Log In Function
   const logIn = async (email, password) => {
