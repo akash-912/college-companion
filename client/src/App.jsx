@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from './features/auth/hooks/useAuth.js';// Ensure this path is correct
-// Ensure this path is correct
+import { useAuth } from './features/auth/hooks/useAuth.js';
+import { supabase } from './lib/supabase'; 
 import ProtectedRoute from './components/ProtectedRoute.jsx';
+
 // Page Imports
 import { LoginPage } from './features/auth/components/LoginForm.jsx';
 import { Navbar } from './components/Navbar.jsx';
@@ -12,15 +13,57 @@ import { SyllabusPage } from './pages/SyllabusPage.jsx';
 import { AIAssistant } from './features/ai-tutor/components/AIAssistant.jsx';
 import { PlannerPage } from './features/exam-planner/components/PlannerPage.jsx';
 import { AdminUploadPage } from './pages/AdminUploadPage.jsx';
-// We extract the main content into a separate component so we can use React Router hooks (useLocation, useNavigate)
+import { UpdatePasswordPage } from './features/auth/components/UpdatePasswordPage.jsx';
+
 function AppContent() {
   const { user, logOut } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
 
-  // --- MOCK DATA (We will replace this with Supabase data later) ---
+  // 1. Initialize State from LocalStorage (Persist the lock across refreshes!)
+  const [isRecoveryMode, setIsRecoveryMode] = useState(() => {
+    return localStorage.getItem('recovery_pending') === 'true';
+  });
+
   const [userBranch, setUserBranch] = useState('Computer Science Engineering');
   const [userSemester, setUserSemester] = useState(3);
+
+  // --- RECOVERY MODE LISTENER ---
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      
+      // A. LOCKDOWN: User clicked email link
+      if (event === 'PASSWORD_RECOVERY') {
+        setIsRecoveryMode(true);
+        localStorage.setItem('recovery_pending', 'true'); // Save the lock to disk
+        navigate('/update-password'); 
+      }
+      
+      // B. SAFETY CHECK: If user signs in normally, ensure lock is cleared
+      // This handles the edge case where a user abandoned recovery previously
+      else if (event === 'SIGNED_IN' && !session?.user?.user_metadata?.recovery_mode) {
+         // We simply rely on the fact that if they logged in with a password, 
+         // they aren't in the recovery flow.
+      }
+      
+      // C. SIGN OUT: Reset state (Local storage is handled by the Update Page or manual logout)
+      else if (event === 'SIGNED_OUT') {
+        setIsRecoveryMode(false);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate]);
+
+  // --- USER DATA SYNC ---
+  useEffect(() => {
+    if (user?.user_metadata) {
+      if (user.user_metadata.branch) setUserBranch(user.user_metadata.branch);
+      if (user.user_metadata.semester) setUserSemester(Number(user.user_metadata.semester));
+    }
+  }, [user]);
+
+  // Mock Data for Dashboard (Replace with real data later)
   const [subjectsProgress] = useState([
     { name: 'Data Structures', progress: 65, totalTopics: 27, completedTopics: 18 },
     { name: 'DBMS', progress: 45, totalTopics: 18, completedTopics: 8 },
@@ -34,28 +77,28 @@ function AppContent() {
     subjectsProgress.reduce((acc, subject) => acc + subject.progress, 0) / subjectsProgress.length
   );
 
-  // --- AUTH & NAVIGATION LOGIC ---
-  
-  // Extract real user data from Supabase session
   const userName = user?.user_metadata?.full_name || 'Student';
   const userEmail = user?.email || '';
-
-  // Map the current URL path to your Navbar's 'currentPage' prop
   const currentPath = location.pathname.replace('/', '') || 'dashboard';
 
   const handleNavigate = (page) => {
+    // Block navigation if locked
+    if (isRecoveryMode) return; 
     navigate(`/${page}`);
   };
 
   const handleLogout = async () => {
+    // If they logout manually during recovery, clear the lock
+    localStorage.removeItem('recovery_pending');
     await logOut();
-    navigate('/'); // Send back to login after logout
+    navigate('/'); 
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Show Navbar only if logged in and NOT on the login page */}
-      {user && location.pathname !== '/' && (
+      
+      {/* HIDE NAVBAR: If in recovery mode, NO navigation allowed */}
+      {user && location.pathname !== '/' && !isRecoveryMode && (
         <Navbar
           currentPage={currentPath}
           onNavigate={handleNavigate}
@@ -66,85 +109,102 @@ function AppContent() {
       )}
 
       <Routes>
-        {/* PUBLIC ROUTE: If logged in, redirect to dashboard. Otherwise, show login. */}
+        {/* PUBLIC ROUTE */}
         <Route 
           path="/" 
           element={user ? <Navigate to="/dashboard" replace /> : <LoginPage />} 
         />
-        {/* Admin Routes */}
+        
+        {/* RECOVERY ROUTE - The only allowed place when in recovery mode */}
+        <Route 
+          path="/update-password" 
+          element={<UpdatePasswordPage />} 
+        />
+        
+        {/* ADMIN ROUTE */}
         <Route path="/admin/upload" element={<AdminUploadPage />} />
 
-        {/* PROTECTED ROUTES */}
+        {/* --- PROTECTED ROUTES (LOCKED DOWN) --- */}
+        {/* If isRecoveryMode is true, redirect ALL these to /update-password */}
+        
         <Route 
           path="/dashboard" 
           element={
-            <ProtectedRoute>
-              <Dashboard
-                userName={userName}
-                userBranch={userBranch}
-                userSemester={userSemester}
-                overallProgress={overallProgress}
-                onNavigate={handleNavigate}
-              />
-            </ProtectedRoute>
+            isRecoveryMode ? <Navigate to="/update-password" replace /> : (
+              <ProtectedRoute>
+                <Dashboard
+                  userName={userName}
+                  userBranch={userBranch}
+                  userSemester={userSemester}
+                  overallProgress={overallProgress}
+                  onNavigate={handleNavigate}
+                />
+              </ProtectedRoute>
+            )
           } 
         />
 
         <Route 
           path="/profile" 
           element={
-            <ProtectedRoute>
-              <ProfilePage
-                userName={userName}
-                userEmail={userEmail}
-                userBranch={userBranch}
-                userSemester={userSemester}
-                onBranchChange={setUserBranch}
-                onSemesterChange={setUserSemester}
-              />
-            </ProtectedRoute>
+            isRecoveryMode ? <Navigate to="/update-password" replace /> : (
+              <ProtectedRoute>
+                <ProfilePage
+                  userName={userName}
+                  userEmail={userEmail}
+                  userBranch={userBranch}
+                  userSemester={userSemester}
+                  onBranchChange={setUserBranch}
+                  onSemesterChange={setUserSemester}
+                />
+              </ProtectedRoute>
+            )
           } 
         />
        
         <Route 
           path="/syllabus" 
           element={
-            <ProtectedRoute>
-              <SyllabusPage
-                userBranch={userBranch}
-                userSemester={userSemester}
-                onSubjectSelect={(subject) => console.log('Selected subject:', subject)}
-              />
-            </ProtectedRoute>
+            isRecoveryMode ? <Navigate to="/update-password" replace /> : (
+              <ProtectedRoute>
+                <SyllabusPage
+                  userBranch={userBranch}
+                  userSemester={userSemester}
+                  onSubjectSelect={(subject) => console.log('Selected subject:', subject)}
+                />
+              </ProtectedRoute>
+            )
           } 
         />
 
         <Route 
           path="/planner" 
           element={
-            <ProtectedRoute>
-              <PlannerPage userSemester={userSemester} />
-            </ProtectedRoute>
+            isRecoveryMode ? <Navigate to="/update-password" replace /> : (
+              <ProtectedRoute>
+                <PlannerPage userSemester={userSemester} />
+              </ProtectedRoute>
+            )
           } 
         />
 
         <Route 
           path="/ai-assistant" 
           element={
-            <ProtectedRoute>
-              <AIAssistant />
-            </ProtectedRoute>
+            isRecoveryMode ? <Navigate to="/update-password" replace /> : (
+              <ProtectedRoute>
+                <AIAssistant />
+              </ProtectedRoute>
+            )
           } 
         />
         
-        {/* Catch-all route for bad URLs */}
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </div>
   );
 }
 
-// Wrap everything in the Router
 export default function App() {
   return (
     <Router>

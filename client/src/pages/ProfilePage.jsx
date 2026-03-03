@@ -1,5 +1,6 @@
 import { useSyllabus } from '../features/syllabus/api/useSyllabus'; 
 import { useProgress } from '../features/syllabus/api/useProgress'; 
+import { useBranches } from '../features/syllabus/hooks/useBranches'; // 1. Import the hook
 
 import { Card } from '../components/ui/Card.jsx';
 import { CircularProgress } from '../components/ui/CircularProgress.jsx';
@@ -15,11 +16,14 @@ export function ProfilePage({
   onSemesterChange,
 }) {
 
-  // 1. Fetch live data based on the current user selections
+  // 2. Fetch Dynamic Branches
+  const { branches, loading: loadingBranches } = useBranches();
+
+  // 3. Fetch live data based on the current user selections
   const { syllabus, loading } = useSyllabus(userBranch, userSemester);
   const { completedTopics } = useProgress();
 
-  // 2. Calculate dynamic subjects progress array
+  // 4. Calculate dynamic subjects progress array
   let totalTopicsGlobal = 0;
   let completedTopicsGlobal = 0;
   let subjectsCompletedCount = 0;
@@ -56,21 +60,15 @@ export function ProfilePage({
     };
   }) : [];
 
-  // 3. Calculate overall global progress
+  // 5. Calculate overall global progress
   const overallProgress = totalTopicsGlobal > 0 
     ? Math.round((completedTopicsGlobal / totalTopicsGlobal) * 100) 
     : 0;
 
-  const branches = [
-    'Computer Science Engineering',
-    'Information Technology',
-    'Electronics and Communication',
-    'Mechanical Engineering',
-  ];
-
   const semesters = [1, 2, 3, 4, 5, 6, 7, 8];
 
-  if (loading) {
+  // 6. Wait for BOTH Syllabus and Branches to load
+  if (loading || loadingBranches) {
     return (
       <div className="min-h-screen flex justify-center pt-20 bg-background transition-colors duration-200">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
@@ -134,9 +132,10 @@ export function ProfilePage({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-card text-foreground border-border">
+                  {/* Map over dynamic branches from Database */}
                   {branches.map((branch) => (
-                    <SelectItem key={branch} value={branch} className="focus:bg-muted focus:text-foreground">
-                      {branch}
+                    <SelectItem key={branch.id} value={branch.name} className="focus:bg-muted focus:text-foreground">
+                      {branch.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
