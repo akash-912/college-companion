@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase'; 
 import { useSyllabus } from '../features/syllabus/api/useSyllabus'; 
 import { useProgress } from '../features/syllabus/api/useProgress';
-// 1. Import the new hook
 import { useBranches } from '../features/syllabus/hooks/useBranches'; 
+
 import { Card } from '../components/ui/Card.jsx';
 import { Button } from '../components/ui/Button.jsx';
 import { Badge } from '../components/ui/Badge.jsx';
@@ -15,23 +15,25 @@ import {
   Layers,
   FileText,
   Download,
-  BookMarked
+  BookMarked,
+  Video
 } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../components/ui/Accordian.jsx';
 import { Progress } from '../components/ui/Progress.jsx';
 
 export function SyllabusPage({ userBranch, userSemester }) {
-  // 2. Use the hook to get real branches from DB
+  // 1. Get dynamic branches
   const { branches, loading: loadingBranches } = useBranches();
   
   const [selectedBranch, setSelectedBranch] = useState(userBranch || 'Computer Science Engineering');
   const [selectedSemester, setSelectedSemester] = useState(userSemester || 3);
   const [materials, setMaterials] = useState([]);
 
+  // 2. Fetch Syllabus & Progress
   const { syllabus, loading: loadingSyllabus, error } = useSyllabus(selectedBranch, selectedSemester);
   const { completedTopics, toggleTopic } = useProgress();
 
-  // Fetch Study Materials
+  // 3. Fetch Study Materials (Notes/PYQs)
   useEffect(() => {
     const fetchMaterials = async () => {
       const { data, error } = await supabase
@@ -66,6 +68,7 @@ export function SyllabusPage({ userBranch, userSemester }) {
     return Math.round((completedCount / totalTopicsCount) * 100);
   };
 
+  // Loading State
   if (loadingSyllabus || loadingBranches) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background transition-colors duration-200">
@@ -96,7 +99,6 @@ export function SyllabusPage({ userBranch, userSemester }) {
             <div>
               <label className="block text-sm font-medium text-foreground mb-2">Select Branch</label>
               <div className="grid grid-cols-2 gap-2">
-                {/* 3. Map over the DYNAMIC branches from Supabase */}
                 {branches.map((branch) => (
                   <Button
                     key={branch.id}
@@ -106,7 +108,6 @@ export function SyllabusPage({ userBranch, userSemester }) {
                       selectedBranch === branch.name ? 'bg-primary text-primary-foreground' : 'text-foreground hover:bg-muted'
                     }`}
                   >
-                    {/* Display logic: Use short_code if available, else first 2 words */}
                     {branch.short_code || branch.name.split(' ').slice(0, 2).join(' ')}
                   </Button>
                 ))}
@@ -142,6 +143,7 @@ export function SyllabusPage({ userBranch, userSemester }) {
             syllabus.map((subject) => {
               const currentProgress = calculateSubjectProgress(subject);
               
+              // Filter materials for this specific subject
               const subjectMaterials = materials.filter(m => m.subject_name === subject.name);
               const pyqs = subjectMaterials.filter(m => m.type === 'PYQ');
               const notes = subjectMaterials.filter(m => m.type === 'Note');
@@ -173,6 +175,7 @@ export function SyllabusPage({ userBranch, userSemester }) {
                           <p className="text-2xl font-bold text-primary">{currentProgress}%</p>
                           <p className="text-xs text-muted-foreground">Progress</p>
                         </div>
+                        {/* Subject-level Playlist Button (optional) */}
                         <Button 
                           variant="outline" 
                           size="sm" 
@@ -273,24 +276,44 @@ export function SyllabusPage({ userBranch, userSemester }) {
                               <div className="space-y-2 pt-2">
                                 {unit.topics.map((topic) => {
                                   const isTopicCompleted = completedTopics.has(topic.id);
+                                  
                                   return (
                                     <div
                                       key={topic.id}
-                                      className="flex items-center justify-between p-3 bg-muted/50 rounded-lg hover:bg-muted transition-colors cursor-pointer border border-transparent hover:border-border"
+                                      className="flex items-center justify-between p-3 bg-muted/50 rounded-lg hover:bg-muted transition-colors cursor-pointer border border-transparent hover:border-border group"
                                       onClick={() => handleTopicToggle(topic.id)}
                                     >
-                                      <div className="flex items-center gap-3">
+                                      <div className="flex items-center gap-3 flex-1 overflow-hidden">
+                                        {/* Status Icon */}
                                         {isTopicCompleted ? (
-                                          <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-500" />
+                                          <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-500 shrink-0" />
                                         ) : (
-                                          <Circle className="w-5 h-5 text-muted-foreground/50" />
+                                          <Circle className="w-5 h-5 text-muted-foreground/50 shrink-0" />
                                         )}
-                                        <span className={isTopicCompleted ? 'text-muted-foreground line-through' : 'text-foreground font-medium'}>
+                                        
+                                        {/* Topic Title */}
+                                        <span className={`truncate ${isTopicCompleted ? 'text-muted-foreground line-through' : 'text-foreground font-medium'} ml-4 mr-4`}>
                                           {topic.title}
                                         </span>
+
+                                        {/* YouTube Link (Conditional) */}
+                                        {topic.youtube_url && (
+                                          <a 
+                                            href={topic.youtube_url} 
+                                            target="_blank" 
+                                            rel="noopener noreferrer"
+                                            onClick={(e) => e.stopPropagation()} // Prevents toggling 'completed'
+                                            className="p-1 rounded-full hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors ml-1"
+                                            title="Watch Video Tutorial"
+                                          >
+                                            <Youtube className="w-7 h-7 text-red-600" />
+                                          </a>
+                                        )}
                                       </div>
+
+                                      {/* Completed Badge */}
                                       {isTopicCompleted && (
-                                        <Badge className="bg-green-500/10 text-green-600 dark:text-green-400 border-none">
+                                        <Badge className="bg-green-500/10 text-green-600 dark:text-green-400 border-none ml-2 shrink-0">
                                           Completed
                                         </Badge>
                                       )}
