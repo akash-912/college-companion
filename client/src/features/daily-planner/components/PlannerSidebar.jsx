@@ -15,7 +15,7 @@ export const PlannerSidebar = ({ isOpen }) => {
 
   return (
     <div
-      className={`fixed top-0 right-0 h-full w-80
+      className={`fixed mt-16  overflow-y-auto pb-2 top-0 right-0 h-[calc(100vh-4rem)] w-80
       bg-white dark:bg-gray-900
       text-gray-800 dark:text-gray-100
       shadow-lg transform transition-all duration-300 z-50

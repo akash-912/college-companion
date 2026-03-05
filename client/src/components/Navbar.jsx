@@ -58,10 +58,6 @@ export function Navbar({ currentPage, onNavigate, isLoggedIn, onLogout, userName
               </Button>
             </div>
           </div>
-
-          <button onClick={openPlanner}>
-           🔥{streak} 📅({completedTasks}/{totalTasks})
-          </button>
           
           <div className="flex items-center gap-4">
             <button 
@@ -73,6 +69,9 @@ export function Navbar({ currentPage, onNavigate, isLoggedIn, onLogout, userName
             <span className="hidden sm:block text-sm text-foreground">
               Welcome, <span className="font-semibold">{userName}</span>
             </span>
+            <button onClick={openPlanner}>
+            🔥{streak} 📅({completedTasks}/{totalTasks})
+            </button>
             <Button variant="outline" onClick={onLogout} className="gap-2">
               <LogOut className="w-4 h-4" />
               Logout
