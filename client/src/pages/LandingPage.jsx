@@ -49,8 +49,8 @@ export function LandingPage() {
       <nav className="max-w-7xl mx-auto px-6 py-6 flex items-center justify-between relative z-10">
         <div className="flex items-center gap-3">
           <GalleryVerticalEnd size={28} className="text-zinc-100" strokeWidth={1.5} />
-          <span className="font-bold font-sans text-xl tracking-tight bg-gradient-to-r from-teal-400 to-emerald-500 bg-clip-text text-transparent">
-            RetroPrep
+          <span className="font-bold font-sans text-3xl tracking-tight bg-gradient-to-r from-teal-400 to-emerald-500 bg-clip-text text-transparent">
+            smartSakhi
           </span>
         </div>
         <div className="flex items-center gap-4">
@@ -79,7 +79,7 @@ export function LandingPage() {
         </h1>
         
         <p className="text-lg md:text-xl text-zinc-400 mb-10 max-w-2xl mx-auto leading-relaxed">
-          RetroPrep replaces your scattered PDFs, to-do lists, and bookmarks with one unified, AI-powered engine designed to help you crush your exams without the burnout.
+          smartSakhi replaces your scattered PDFs, to-do lists, and bookmarks with one unified, AI-powered engine designed to help you crush your exams without the burnout.
         </p>
         
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">

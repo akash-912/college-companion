@@ -23,8 +23,8 @@ export function Navbar({ currentPage, onNavigate, isLoggedIn, onLogout, userName
           {/* Mobile Logo */}
           <div className="flex items-center gap-3 cursor-pointer" onClick={() => onNavigate('dashboard')}>
               <GalleryVerticalEnd size={24} className="text-zinc-100" strokeWidth={1.5} />
-              <span className="font-bold font-sans text-xl tracking-tight bg-gradient-to-r from-teal-400 to-emerald-500 bg-clip-text text-transparent">
-                RetroPrep
+              <span className="font-bold font-sans text-2xl tracking-tight bg-gradient-to-r from-teal-400 to-emerald-500 bg-clip-text text-transparent ">
+                smartSakhi
               </span>
           </div>
           

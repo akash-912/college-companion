@@ -32,9 +32,9 @@ export function Sidebar({ currentPage, onNavigate, onLogout }) {
         </button>
         
         {/* RetroPrep Text with Teal/Emerald Gradient */}
-        <div className={`font-bold font-sans text-xl tracking-tight overflow-hidden transition-all duration-300 ${isExpanded ? 'opacity-100 w-auto' : 'opacity-0 w-0 hidden'}`}>
+        <div className={`font-bold font-sans text-3xl tracking-tight overflow-hidden transition-all duration-300 ${isExpanded ? 'opacity-100 w-auto' : 'opacity-0 w-0 hidden'}`}>
           <span className="bg-gradient-to-r from-teal-400 to-emerald-500 bg-clip-text text-transparent">
-            RetroPrep
+            smartSakhi
           </span>
         </div>
       </div>
