@@ -56,7 +56,7 @@ function AppContent() {
   const userName = user?.user_metadata?.full_name || 'Student';
   const userEmail = user?.email || '';
   
-  // Get the current page from the URL (e.g., "/dashboard" becomes "dashboard")
+  
   const currentPage = location.pathname.replace('/', '') || 'dashboard';
 
   const handleNavigate = (page) => {
@@ -71,7 +71,6 @@ function AppContent() {
     navigate('/'); 
   };
 
-  // 1. SHOW SPINNER WHILE SUPABASE CHECKS SESSION
   if (loading) {
     return (
       <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center z-50">
@@ -80,7 +79,6 @@ function AppContent() {
     );
   }
 
-  // 2. IF TRULY NOT LOGGED IN, LOCK THEM TO THE LOGIN PAGE
   if (!user) {
     return (
       <Routes>
@@ -91,13 +89,11 @@ function AppContent() {
     );
   }
 
-  // 3. IF LOGGED IN, BUT SITTING ON "/", REDIRECT TO DASHBOARD
   if (user && location.pathname === '/') {
     return <Navigate to="/dashboard" replace />;
   }
   
 
-  // If user IS logged in, wrap the app in the MainLayout (Sidebars + Dark Mode)
   return (
     <>
       <MainLayout
