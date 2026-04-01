@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../../lib/supabase';
 
-// 1. Add 'branch' as a parameter here
 export const useSyllabus = (branch, semester) => {
   const [syllabus, setSyllabus] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -30,7 +29,6 @@ export const useSyllabus = (branch, semester) => {
               )
             )
           `)
-          // 2. Add both filters to the query!
           .eq('branch', branch)
           .eq('semester', semester);
 
@@ -49,11 +47,11 @@ export const useSyllabus = (branch, semester) => {
       }
     };
 
-    // 3. Only fetch if we have BOTH a branch and a semester selected
+    // Only fetch if we have BOTH a branch and a semester selected
     if (branch && semester) {
       fetchSyllabus();
     }
-  }, [branch, semester]); // Add branch to dependency array
+  }, [branch, semester]); 
 
   return { syllabus, loading, error };
 };

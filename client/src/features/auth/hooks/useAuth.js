@@ -5,7 +5,6 @@ export const useAuth = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Check if a user is already logged in when the app loads
   useEffect(() => {
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -15,7 +14,6 @@ export const useAuth = () => {
     
     checkUser();
 
-    // Listen for changes (like if they log in or log out)
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setUser(session?.user || null);
@@ -27,8 +25,6 @@ export const useAuth = () => {
     };
   }, []);
 
-  // Sign Up Function
-  // In useAuth.jsx
 const signUp = async (email, password, name, branch, semester) => {
   const { data, error } = await supabase.auth.signUp({
     email,
@@ -36,8 +32,8 @@ const signUp = async (email, password, name, branch, semester) => {
     options: {
       data: {
         full_name: name,
-        branch: branch,     // Save branch to metadata
-        semester: semester, // Save semester to metadata
+        branch: branch,    
+        semester: semester,
       },
     },
   });
@@ -45,7 +41,6 @@ const signUp = async (email, password, name, branch, semester) => {
   return data;
 };
 
-  // Log In Function
   const logIn = async (email, password) => {
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
@@ -55,7 +50,6 @@ const signUp = async (email, password, name, branch, semester) => {
     return data;
   };
 
-  // Log Out Function
   const logOut = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) throw error;

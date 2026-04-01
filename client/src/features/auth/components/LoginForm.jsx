@@ -66,13 +66,11 @@ export function LoginPage() {
       } else {
         const data = await signUp(email, password, name, branch, semester);
         
-        // If Supabase requires email verification, the session will be null
         if (data?.user && !data?.session) {
           setSuccessMsg('Account created! Please check your college email to verify your account.');
-          setMode('login'); // Flip the UI back to the login view
-          setPassword('');  // Clear the password field for security
+          setMode('login');
+          setPassword('');  
         } else {
-          // Fallback just in case email verification gets turned off
           navigate('/dashboard'); 
         }
       }
@@ -83,20 +81,17 @@ export function LoginPage() {
     }
   };
 
-  // Reusable dark mode classes
   const inputClass = "bg-[#0a0a0a] border-zinc-800 text-zinc-200 focus:border-teal-500/50 rounded-xl px-4 h-11 w-full outline-none transition-colors";
   const labelClass = "block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2";
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-zinc-100 font-sans flex items-center justify-center p-4 relative overflow-hidden">
       
-      {/* Background Glowing Orbs (Matches Landing Page) */}
       <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-teal-500/10 rounded-full blur-[120px] pointer-events-none"></div>
       <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-violet-500/10 rounded-full blur-[120px] pointer-events-none"></div>
       
       <div className="w-full max-w-5xl grid md:grid-cols-2 gap-12 items-center relative z-10">
         
-        {/* Left Side: Branding (Hidden on mobile) */}
         <div className="hidden md:flex flex-col justify-center pr-8">
           <div className="flex items-center gap-3 mb-8 cursor-pointer" onClick={() => navigate('/')}>
             <GalleryVerticalEnd size={32} className="text-zinc-100" strokeWidth={1.5} />
@@ -120,7 +115,6 @@ export function LoginPage() {
           </p>
         </div>
 
-        {/* Right Side: Form Card */}
         <div className="bg-[#18181b] border border-zinc-800/60 p-8 sm:p-10 rounded-[2.5rem] shadow-2xl relative">
           
           <div className="md:hidden flex items-center justify-center gap-2 mb-8" onClick={() => navigate('/')}>
@@ -144,7 +138,6 @@ export function LoginPage() {
               </p>
             </div>
 
-            {/* Messages */}
             {errorMsg && (
               <div className="p-4 bg-rose-500/10 border border-rose-500/20 text-rose-400 rounded-xl text-sm font-medium">
                 {errorMsg}
@@ -156,7 +149,6 @@ export function LoginPage() {
               </div>
             )}
 
-            {/* --- FORGOT PASSWORD FORM --- */}
             {mode === 'forgot' ? (
               <form onSubmit={handleResetPassword} className="space-y-5">
                 <div>
@@ -172,7 +164,6 @@ export function LoginPage() {
               </form>
             ) : (
               
-              /* --- LOGIN / SIGNUP FORM --- */
               <form onSubmit={handleSubmit} className="space-y-5">
                 {mode === 'signup' && (
                   <div className="space-y-5 animate-in fade-in slide-in-from-bottom-2 duration-300">
@@ -232,7 +223,6 @@ export function LoginPage() {
               </form>
             )}
 
-            {/* Toggle Login/Signup */}
             {mode !== 'forgot' && (
               <div className="text-center pt-2">
                 <button

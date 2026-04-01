@@ -14,7 +14,6 @@ export function Navbar({ currentPage, onNavigate, isLoggedIn, onLogout, userName
     { key: 'safe-space', label: 'Safe Space', Icon: Heart },
   ];
 
-  // The 'md:hidden' class makes this entirely disappear on desktop!
   return (
     <nav className="md:hidden bg-[#0a0a0a]/90 backdrop-blur-md border-b border-zinc-800/80 sticky top-0 z-50 shadow-sm font-sans">
       <div className="px-4">
