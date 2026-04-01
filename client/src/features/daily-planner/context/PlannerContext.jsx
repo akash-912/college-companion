@@ -13,9 +13,6 @@ export const PlannerProvider = ({ children }) => {
 
   const today = new Date().toISOString().split("T")[0];
 
-  /* =========================
-     LOAD TODAY TASKS
-  ========================== */
 
   const loadTasks = async () => {
     if (!user) return;
@@ -32,9 +29,6 @@ export const PlannerProvider = ({ children }) => {
     }
   };
 
-  /* =========================
-     LOAD STREAK
-  ========================== */
 
   const loadStreak = async () => {
     if (!user) return;
@@ -50,9 +44,6 @@ export const PlannerProvider = ({ children }) => {
     }
   };
 
-  /* =========================
-     UPDATE STREAK
-  ========================== */
 
   const updateStreak = async () => {
     if (!user) return;
@@ -99,9 +90,6 @@ export const PlannerProvider = ({ children }) => {
     setStreak(newStreak);
   };
 
-  /* =========================
-     ADD TASK
-  ========================== */
 
   const addTask = async () => {
     if (!newTask.trim() || !user) return;
@@ -123,9 +111,6 @@ export const PlannerProvider = ({ children }) => {
     setNewTask("");
   };
 
-  /* =========================
-     TOGGLE TASK
-  ========================== */
 
   const toggleTask = async (task) => {
     const { data } = await supabase
@@ -139,7 +124,6 @@ export const PlannerProvider = ({ children }) => {
       prev.map(t => (t.id === task.id ? data : t))
     );
 
-    // increase streak only when first task completed
     if (!task.completed) {
       const completedBefore = tasks.filter(t => t.completed).length;
 
@@ -149,9 +133,6 @@ export const PlannerProvider = ({ children }) => {
     }
   };
 
-  /* =========================
-     DELETE TASK
-  ========================== */
 
   const deleteTask = async (id) => {
     await supabase.from("tasks").delete().eq("id", id);
@@ -159,9 +140,6 @@ export const PlannerProvider = ({ children }) => {
     setTasks(prev => prev.filter(t => t.id !== id));
   };
 
-  /* =========================
-     COPY YESTERDAY TASKS
-  ========================== */
 
   const copyYesterdayTasks = async () => {
     if (!user) return;
@@ -189,9 +167,6 @@ export const PlannerProvider = ({ children }) => {
     loadTasks();
   };
 
-  /* =========================
-     LOAD DATA ON LOGIN
-  ========================== */
 
   useEffect(() => {
     if (user) {
@@ -200,9 +175,6 @@ export const PlannerProvider = ({ children }) => {
     }
   }, [user]);
 
-  /* =========================
-     TASK PROGRESS
-  ========================== */
 
   const completedTasks = tasks.filter(t => t.completed).length;
   const totalTasks = tasks.length;

@@ -10,11 +10,9 @@ export function ThemeProvider({ children }) {
   useEffect(() => {
     const root = window.document.documentElement;
     
-    // Remove both classes to be safe, then add the current theme
     root.classList.remove('light', 'dark');
     root.classList.add(theme);
     
-    // Save preference
     localStorage.setItem('theme', theme);
   }, [theme]);
 

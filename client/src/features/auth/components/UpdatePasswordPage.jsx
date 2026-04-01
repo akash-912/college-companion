@@ -19,7 +19,6 @@ export function UpdatePasswordPage() {
     setErrorMsg('');
     setIsLoading(true);
 
-    // 1. Validation
     if (password !== confirmPassword) {
       setErrorMsg("Passwords don't match");
       setIsLoading(false);
@@ -33,22 +32,16 @@ export function UpdatePasswordPage() {
     }
 
     try {
-      // 2. Update the password in Supabase
       const { error } = await supabase.auth.updateUser({
         password: password
       });
 
       if (error) throw error;
 
-      // 3. UNLOCK THE APP: Remove the lock from local storage
-      // This is the only way to escape the "Recovery Mode" loop successfully
       localStorage.removeItem('recovery_pending'); 
 
-      // 4. CRITICAL: Log the user out immediately!
-      // This prevents them from accessing the dashboard with the "Recovery Session"
       await supabase.auth.signOut();
 
-      // 5. Redirect to Login Page with a success message
       navigate('/', { 
         state: { 
           successMessage: 'Password updated successfully! Please login with your new password.' 
@@ -62,8 +55,6 @@ export function UpdatePasswordPage() {
       setIsLoading(false);
     }
   };
-
-  // Allow user to abort the process safely
   const handleCancel = async () => {
     localStorage.removeItem('recovery_pending');
     await supabase.auth.signOut();
@@ -122,7 +113,6 @@ export function UpdatePasswordPage() {
             {isLoading ? 'Updating...' : 'Update Password & Logout'}
           </Button>
 
-          {/* Cancel Button in case they want to quit */}
           <button 
             type="button" 
             onClick={handleCancel}
